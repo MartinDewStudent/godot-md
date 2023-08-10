@@ -2,14 +2,14 @@
 
 #include "register_types.h"
 
+#include "Cube.h"
 #include "core/object/class_db.h"
-#include "cube.h"
 
 void initialize_basic_types_module(ModuleInitializationLevel p_level) {
 	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
 		return;
 	}
-	ClassDB::register_class<cube>();
+	ClassDB::register_class<Cube>();
 }
 
 void uninitialize_basic_types_module(ModuleInitializationLevel p_level) {
