@@ -126,7 +126,6 @@ public:
 	bool is_singleton_user_created(const StringName &p_name) const;
 
 #ifdef TOOLS_ENABLED
-#define EDITOR_HINT
 	_FORCE_INLINE_ void set_editor_hint(bool p_enabled) { editor_hint = p_enabled; }
 	_FORCE_INLINE_ bool is_editor_hint() const { return editor_hint; }
 

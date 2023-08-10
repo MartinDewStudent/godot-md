@@ -17,4 +17,4 @@ cube::cube()
 	// add_child(_shape.get());
 }
 
-void cube::_bind_methods() {}
+// void cube::_bind_methods() {}

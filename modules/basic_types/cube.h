@@ -4,11 +4,11 @@
 #include "scene/3d/physics_body_3d.h"
 #include "forward_decs.h"
 
-class cube : public Node3D {
-	GDCLASS(cube, Node3D)
+class cube : public RigidBody3D {
+	GDCLASS(cube, RigidBody3D)
 
 protected:
-	static void _bind_methods();
+	// static void _bind_methods();
 
 	std::unique_ptr<MeshInstance3D> _mesh_instance;
 	std::unique_ptr<BoxShape3D> _shape;
