@@ -198,6 +198,7 @@ def get_opts():
         ),
         BoolVariable("use_mingw", "Use the Mingw compiler, even if MSVC is installed.", False),
         BoolVariable("use_llvm", "Use the LLVM compiler", False),
+        BoolVariable("use_clang_cl", "Use the clang-cl compiler", False),
         BoolVariable("use_static_cpp", "Link MinGW/MSVC C++ runtime libraries statically", True),
         BoolVariable("use_asan", "Use address sanitizer (ASAN)", False),
         BoolVariable("debug_crt", "Compile with MSVC's debug CRT (/MDd)", False),
@@ -522,6 +523,41 @@ def configure_msvc(env, vcvars_msvc_config):
         else:
             print("Missing environment variable: WindowsSdkDir")
 
+    ## Use clang-cl
+    if env["use_clang_cl"] or env["use_llvm"]:
+        # disable the feature on 32 bit builds
+        if env["arch"] == "x86_32":
+            print("Clang-cl is not supported on 32 bit builds.")
+            sys.exit(255)
+
+        # env["use_clang_cl"] = env["use_llvm"] = True
+        env["CC"] = "clang-cl"
+        env["CXX"] = "clang-cl"
+        env["linker"] = "lld"
+        # env["RANLIB"] = "llvm-ranlib"
+        # env["AR"] = "llvm-ar"
+        # env["AS"] = "llvm-as"
+        if try_cmd("as --version", "", env["arch"]):
+            env["AS"] = "llvm-as"
+        if try_cmd("ar --version", "", env["arch"]):
+            env["AR"] = "llvm-ar"
+        if try_cmd("ranlib --version", "", env["arch"]):
+            env["RANLIB"] = "llvm-ranlib"
+        env["NM"] = "llvm-nm"
+        env["STRIP"] = "llvm-strip"
+        env["LD"] = "lld-link"
+        env["RC"] = "llvm-rc"
+        env["WINDRES"] = "llvm-windres"
+        env["LINK"] = "lld-link"
+        # Suppress warnings clang-cl exceptions
+        env.AppendUnique(CCFLAGS=["-Wno-microsoft-exception-spec"])
+        env.AppendUnique(CCFLAGS=["-Wno-ordered-compare-function-pointers"])
+        env.AppendUnique(CCFLAGS=["-Wno-microsoft-unqualified-friend"])
+
+        env.AppendUnique(CCFLAGS=["/EHsc", "-msse4.1", "-m64"])
+        env.Append(CPPDEFINES=["WINDOWS_ENABLED", "WASAPI_ENABLED", "WINMIDI_ENABLED"])
+        env.extra_suffix = ".clang-cl" + env.extra_suffix
+        LIBS += ["clang_rt.asan_dynamic-x86_64", "clang_rt.asan_dynamic_runtime_thunk-x86_64", "clang_rt.builtins-x86_64"]
     ## LTO
 
     if env["lto"] == "auto":  # No LTO by default for MSVC, doesn't help.

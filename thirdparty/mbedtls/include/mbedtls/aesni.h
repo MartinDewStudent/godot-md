@@ -62,6 +62,12 @@
 /* Visual Studio supports AESNI intrinsics since VS 2008 SP1. We only support
  * VS 2013 and up for other reasons anyway, so no need to check the version. */
 #define MBEDTLS_AESNI_HAVE_INTRINSICS
+// if using clang-cl
+#if defined(__clang__)
+#include "windows.h"
+#include <intrin.h>
+#define MBEDTLS_HAVE_X86_64
+#endif
 #endif
 /* GCC-like compilers: currently, we only support intrinsics if the requisite
  * target flag is enabled when building the library (e.g. `gcc -mpclmul -msse2`

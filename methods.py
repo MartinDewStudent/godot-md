@@ -830,7 +830,7 @@ def generate_vs_project(env, original_args, project_name="godot"):
                     for platform in ModuleConfigs.PLATFORMS
                 ]
                 self.arg_dict["runfile"] += [
-                    f'bin\\godot.windows.{config}{ModuleConfigs.DEV_SUFFIX}{".double" if env["precision"] == "double" else ""}.{plat_id}{f".{name}" if name else ""}.exe'
+                    f'bin\\godot.windows.{config}{ModuleConfigs.DEV_SUFFIX}{".double" if env["precision"] == "double" else ""}.{plat_id}{".clang-cl" if  env["use_clang_cl"] else ""}{f".{name}" if name else ""}.exe'
                     for config in ModuleConfigs.CONFIGURATIONS
                     for plat_id in ModuleConfigs.PLATFORM_IDS
                 ]
@@ -865,6 +865,9 @@ def generate_vs_project(env, original_args, project_name="godot"):
 
                 for arg, value in filtered_args.items():
                     common_build_postfix.append(f"{arg}={value}")
+
+                if env["use_clang_cl"]:
+                    common_build_postfix.append("use_clang_cl=yes")
 
                 result = " ^& ".join(common_build_prefix + [" ".join([commands] + common_build_postfix)])
                 return result
@@ -912,9 +915,12 @@ def generate_vs_project(env, original_args, project_name="godot"):
         if path_to_venv and path_to_scons_exe.exists():
             scons_cmd = str(path_to_scons_exe)
 
-        env["MSVSBUILDCOM"] = module_configs.build_commandline(scons_cmd)
-        env["MSVSREBUILDCOM"] = module_configs.build_commandline(f"{scons_cmd} vsproj=yes")
-        env["MSVSCLEANCOM"] = module_configs.build_commandline(f"{scons_cmd} --clean")
+        if env.get("use_clang_cl") and os.name == "nt":
+            # Tell vs to use clang-cl as the compiler
+            env["MSVSCCFLAGS"] = "/clang:-cc1"
+        env["MSVSBUILDCOM"] = module_configs.build_commandline("scons")
+        env["MSVSREBUILDCOM"] = module_configs.build_commandline("scons vsproj=yes")
+        env["MSVSCLEANCOM"] = module_configs.build_commandline("scons --clean")
         if not env.get("MSVS"):
             env["MSVS"]["PROJECTSUFFIX"] = ".vcxproj"
             env["MSVS"]["SOLUTIONSUFFIX"] = ".sln"
