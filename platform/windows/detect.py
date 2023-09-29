@@ -534,9 +534,6 @@ def configure_msvc(env, vcvars_msvc_config):
         env["CC"] = "clang-cl"
         env["CXX"] = "clang-cl"
         env["linker"] = "lld"
-        # env["RANLIB"] = "llvm-ranlib"
-        # env["AR"] = "llvm-ar"
-        # env["AS"] = "llvm-as"
         if try_cmd("as --version", "", env["arch"]):
             env["AS"] = "llvm-as"
         if try_cmd("ar --version", "", env["arch"]):
